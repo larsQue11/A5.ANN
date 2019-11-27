@@ -16,36 +16,46 @@ when the inputs are distinct and one input is 1. It can be reduced to the combin
 
 To represent the XOR function as an ANN, we will create a three layer network in which the input layer has two inputs
 '''
+def logicalNAND(x,y):
+    
+    if x + y < 2:
+        return 1
+    else:
+        return 0
 
-import NeuralNetwork as nn
-import numpy as np
+
+def logicalOR(x,y):
+
+    if x + y > 0:
+        return 1
+    else:
+        return 0
+
+
+def logicalAND(x,y):
+
+    if x + y > 1:
+        return 1
+    else:
+        return 0
+
+
+#XOR(x,y) = AND(OR(x,y),NAND(x,y))
+def logicalXOR(x,y):
+
+    prediction = logicalAND(logicalNAND(x,y),logicalOR(x,y))
+
+    return prediction
+
 
 def main():
 
-    dataSet = [[[0,0],[1,0]],
-                [[0,1],[0,1]],
-                [[1,0],[0,1]],
-                [[1,1],[1,0]]
-                ]
+    inputs = [(0,0),(0,1),(1,0),(1,1)]
 
-    # dataSet = [[[0,0],[1]],
-    #             [[0,1],[0]],
-    #             [[1,0],[0]],
-    #             [[1,1],[1]]
-    #             ]
+    for test in inputs:
+        out = logicalXOR(test[0],test[1])
+        print(out)
 
-    learningRate = 0.0001
-    numberOfTrainingSamples = 10
-    trainingData = [dataSet[np.random.randint(0,4,size=None,dtype=int)] for i in range(numberOfTrainingSamples)]
-
-    network = nn.NeuralNetwork(2,2,2)
-    network.train(learningRate,trainingData)
-    
-    for test in dataSet:
-        prediction = network.predict(test[0])
-        print(f"Input: {test[0]} | Target: {test[1]} | Predicted: {prediction}")
-
-
-if __name__ == "__main__":
+if __name__=='__main__':
     main()
 
