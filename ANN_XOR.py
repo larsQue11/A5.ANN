@@ -22,23 +22,23 @@ import numpy as np
 
 def main():
 
-    dataSet = [[[0,0],[1,0]],
-                [[0,1],[0,1]],
-                [[1,0],[0,1]],
-                [[1,1],[1,0]]
-                ]
-
-    # dataSet = [[[0,0],[1]],
-    #             [[0,1],[0]],
-    #             [[1,0],[0]],
-    #             [[1,1],[1]]
+    # dataSet = [[[0,0],[1,0]],
+    #             [[0,1],[0,1]],
+    #             [[1,0],[0,1]],
+    #             [[1,1],[1,0]]
     #             ]
 
-    learningRate = 0.0001
-    numberOfTrainingSamples = 10
+    dataSet = [[[0,0],[0]],
+                [[0,1],[1]],
+                [[1,0],[1]],
+                [[1,1],[0]]
+                ]
+
+    learningRate = 0.01
+    numberOfTrainingSamples = 100000
     trainingData = [dataSet[np.random.randint(0,4,size=None,dtype=int)] for i in range(numberOfTrainingSamples)]
 
-    network = nn.NeuralNetwork(2,2,2)
+    network = nn.NeuralNetwork(2,2,1)
     network.train(learningRate,trainingData)
     
     for test in dataSet:
