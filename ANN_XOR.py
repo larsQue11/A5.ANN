@@ -34,8 +34,8 @@ def main():
                 [[1,1],[0]]
                 ]
 
-    learningRate = 0.01
-    numberOfTrainingSamples = 100000
+    learningRate = 0.001
+    numberOfTrainingSamples = 10000
     trainingData = [dataSet[np.random.randint(0,4,size=None,dtype=int)] for i in range(numberOfTrainingSamples)]
 
     network = nn.NeuralNetwork(2,2,1)
