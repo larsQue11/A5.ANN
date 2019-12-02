@@ -17,16 +17,10 @@ when the inputs are distinct and one input is 1. It can be reduced to the combin
 To represent the XOR function as an ANN, we will create a three layer network in which the input layer has two inputs
 '''
 
-import NeuralNetwork as nn
+import NN2 as nn
 import numpy as np
 
 def main():
-
-    # dataSet = [[[0,0],[1,0]],
-    #             [[0,1],[0,1]],
-    #             [[1,0],[0,1]],
-    #             [[1,1],[1,0]]
-    #             ]
 
     dataSet = [[[0,0],[0]],
                 [[0,1],[1]],
@@ -34,8 +28,8 @@ def main():
                 [[1,1],[0]]
                 ]
 
-    learningRate = 0.001
-    numberOfTrainingSamples = 10000
+    learningRate = 0.5
+    numberOfTrainingSamples = 100000
     trainingData = [dataSet[np.random.randint(0,4,size=None,dtype=int)] for i in range(numberOfTrainingSamples)]
 
     network = nn.NeuralNetwork(2,2,1)

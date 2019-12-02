@@ -8,8 +8,8 @@ class NeuralNetwork():
         self.numInputs = numInputs
         self.numHiddenNeurons = numHiddenNeurons
         self.numOutputs = numOutputs
-        self.inputLayerBias = 1
-        self.hiddenLayerBias = 1
+        self.inputLayerBias = np.reshape([np.random.random() for i in  range(self.numHiddenNeurons)],(self.numHiddenNeurons,1))
+        self.hiddenLayerBias = np.reshape([np.random.random() for i in  range(self.numOutputs)],(self.numOutputs,1))
         self.weightsInputToHidden = self.__initializeWeights(numInputs,numHiddenNeurons) #* np.sqrt(2/1)
         self.weightsHiddenToOutput = self.__initializeWeights(numHiddenNeurons,numOutputs) #* np.sqrt(2/1)
         # self.weightsInputToHidden = np.ones((2,3))
@@ -18,7 +18,7 @@ class NeuralNetwork():
     def __initializeWeights(self,numOfSources,numOfDestinations):                  
 
         rows = numOfDestinations
-        cols = numOfSources + 1 #add 1 for bias
+        cols = numOfSources
         weights = []
 
         for row in range(rows):
@@ -53,50 +53,61 @@ class NeuralNetwork():
 
             #create an Nx1 vector with the input data            
             # inputVector = np.append(trainer[0],[self.inputLayerBias])
-            inputVector = np.array(trainer[0])
-            inputVector = np.append(inputVector,self.inputLayerBias)            
+            inputVector = np.array(trainer[0])       
             inputVector = np.reshape(inputVector,(len(inputVector),1))
 
             #calculate hidden layer vector
-            hiddenVector = np.dot(self.weightsInputToHidden,inputVector)
+            hiddenVectorIn = np.dot(self.weightsInputToHidden,inputVector)
+            hiddenVectorIn = np.add(hiddenVectorIn,self.inputLayerBias)
             #run each value through sigmoid filter
-            hiddenVector = [self.__Sigmoid(i) for i in hiddenVector]    
-            hiddenVector.append(self.hiddenLayerBias) #add bias       
-            hiddenVector = np.reshape(hiddenVector,(len(hiddenVector),1))
+            hiddenVectorOut = [self.__Sigmoid(i) for i in hiddenVectorIn]      
+            hiddenVectorOut = np.reshape(hiddenVectorOut,(len(hiddenVectorOut),1))
                    
             #calculate output vector
-            outputVector = np.dot(self.weightsHiddenToOutput,hiddenVector)
-            outputVector = [self.__Sigmoid(i) for i in outputVector]            
-            outputVector = np.reshape(outputVector,(len(outputVector),1))     
+            outputVectorIn = np.dot(self.weightsHiddenToOutput,hiddenVectorOut)
+            outputVectorIn = np.add(outputVectorIn,self.hiddenLayerBias)
+            outputVectorOut = [self.__Sigmoid(i) for i in outputVectorIn]            
+            outputVectorOut = np.reshape(outputVectorOut,(len(outputVectorOut),1))     
             #calculate the error
-            errorVectorOutput = np.subtract(targetVector,outputVector)
+            errorVectorOutput = np.subtract(targetVector,outputVectorOut)
+            # errorVectorOutput = 0.5 * errorVectorOutput * errorVectorOutput
             
 
             #Backpropagation starts here
             #calculate the new weights for the edges between the Hidden and Output layers
-            gradientVectorHiddenToOutput = self.__calculateGradient(learningRate,errorVectorOutput,hiddenVector,outputVector)
+            gradientVectorHiddenToOutput = self.__calculateGradient(learningRate,errorVectorOutput,hiddenVectorOut,outputVectorOut)
             # self.weightsHiddenToOutput = np.add(self.weightsHiddenToOutput,gradientVectorHiddenToOutput)
 
             #calculate the hidden layer errors as the transpose of the weight matrix between
             #Hidden and Output layers multiplied by the output error vector
             errorVectorHidden = np.dot(np.transpose(self.weightsHiddenToOutput),errorVectorOutput)
+            deltaMatrix = np.dot(gradientVectorHiddenToOutput,np.transpose(hiddenVectorOut))
+            self.weightsHiddenToOutput = np.add(self.weightsHiddenToOutput,deltaMatrix)
+            self.hiddenLayerBias = np.add(self.hiddenLayerBias,gradientVectorHiddenToOutput)
+
 
             # self.inputLayerBias = self.inputLayerBias + errorVectorHidden[len(errorVectorHidden)-1]
-            errorVectorHidden = errorVectorHidden[:len(errorVectorHidden)-1] #remove the bias element
-            hiddenVector = hiddenVector[:len(hiddenVector)-1] #remove the bias element
-            gradientVectorInputToHidden = self.__calculateGradient(learningRate,errorVectorHidden,inputVector,hiddenVector)
+            # errorVectorHidden = errorVectorHidden[:len(errorVectorHidden)-1] #remove the bias element
+            # hiddenVector = hiddenVector[:len(hiddenVector)-1] #remove the bias element
+            gradientVectorInputToHidden = self.__calculateGradient(learningRate,errorVectorHidden,inputVector,hiddenVectorOut)
             errorVectorInput = np.dot(np.transpose(self.weightsInputToHidden),errorVectorHidden)
             # self.inputLayerBias = self.inputLayerBias + errorVectorInput[len(errorVectorInput)-1]
-            self.weightsInputToHidden = np.add(self.weightsInputToHidden,gradientVectorInputToHidden)
-            self.weightsHiddenToOutput = np.add(self.weightsHiddenToOutput,gradientVectorHiddenToOutput)
+            deltaMatrix = np.dot(gradientVectorInputToHidden,np.transpose(inputVector))
+            self.weightsInputToHidden = np.add(self.weightsInputToHidden,deltaMatrix)
+            self.inputLayerBias = np.add(self.inputLayerBias,gradientVectorInputToHidden)
+
+            # deltaMatrix = np.dot(gradientVectorHiddenToOutput,np.transpose(hiddenVector))
+            # self.weightsHiddenToOutput = np.add(self.weightsHiddenToOutput,deltaMatrix)
+            # self.hiddenLayerBias = np.add(self.hiddenLayerBias,gradientVectorHiddenToOutput)
 
 
     # dW = alpha * Error * d(sigmoid(x)) * Input
     def __calculateGradient(self,learningRate,errorVector,sourceVector,destinationVector):
 
-        gradientVector = self.__dSigmoid(destinationVector)
+        # gradientVector = self.__dSigmoid(destinationVector)
+        gradientVector = np.multiply(destinationVector,1-destinationVector)
         gradientVector = learningRate * errorVector * gradientVector
-        gradientVector = np.dot(gradientVector,np.transpose(sourceVector))
+        # gradientVector = np.dot(gradientVector,np.transpose(sourceVector))
 
         return gradientVector
 
@@ -105,13 +116,13 @@ class NeuralNetwork():
 
         return 1 / (1 + exp(-x))
 
-    def __dSigmoid(self,x):
+    def __dSigmoid(self,v):
 
-        vector = np.ones((len(x),1))
-        xSigmoid = [self.__Sigmoid(i) for i in x]
-        xSigmoid = np.reshape(xSigmoid,(len(x),1))
-        vector = np.subtract(vector,xSigmoid)
-        vector = xSigmoid * vector
+        vector = np.ones((len(v),1))
+        # dSigmoid = [self.__Sigmoid(i) for i in v]
+        # dSigmoid = np.reshape(dSigmoid,(len(v),1))
+        vector = np.subtract(vector,v)
+        vector = v * vector
 
         return vector
 
@@ -128,16 +139,16 @@ class NeuralNetwork():
     def predict(self,data):
 
         inputVector = np.array(data)
-        inputVector = np.append(inputVector,1) #add bias
-        inputVector = np.reshape(inputVector,(self.numInputs+1,1))
+        inputVector = np.reshape(inputVector,(self.numInputs,1))
 
         hiddenVector = np.dot(self.weightsInputToHidden,inputVector)
+        hiddenVector = np.add(hiddenVector,self.inputLayerBias)
         hiddenVector = [self.__Sigmoid(i) for i in hiddenVector]
-        hiddenVector.append(1)
-        hiddenVector = np.reshape(hiddenVector,(self.numHiddenNeurons+1,1))
+        hiddenVector = np.reshape(hiddenVector,(self.numHiddenNeurons,1))
 
         outputVector = np.dot(self.weightsHiddenToOutput,hiddenVector)
+        outputVector = np.add(outputVector,self.hiddenLayerBias)
         outputVector = [self.__Sigmoid(i) for i in outputVector]
-        # outputVector = np.reshape(outputVector,(self.numOutputs,1))
+        outputVector = np.reshape(outputVector,(self.numOutputs,1))
 
         return outputVector
