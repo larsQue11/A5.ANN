@@ -55,7 +55,7 @@ class NeuralNetwork():
             # inputVector = np.append(trainer[0],[self.inputLayerBias])
             inputVector = np.array(trainer[0])       
             inputVector = np.reshape(inputVector,(len(inputVector),1))
-
+            
             #calculate hidden layer vector
             hiddenVectorIn = np.dot(self.weightsInputToHidden,inputVector)
             hiddenVectorIn = np.add(hiddenVectorIn,self.inputLayerBias)

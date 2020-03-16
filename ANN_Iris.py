@@ -42,15 +42,19 @@ def main():
 			testingSet.append(sortData)
 		count = count + 1
 
-	learningRate = 0.01
-
+	learningRate = 1.2
+	testNetwork = nn.NeuralNetwork(4,6,3)
+	
 	trainingSetPlus = trainingSet[:]
-	for i in range(10000):
+	for i in range(100):
 		random.shuffle(trainingSetPlus)
 		trainingSetPlus = trainingSetPlus + trainingSet[:]
 		random.shuffle(trainingSetPlus)
 
-	network = nn.NeuralNetwork(4,3,3)
+	for i in range(1000):
+		random.shuffle(trainingSet)
+
+	network = nn.NeuralNetwork(4,6,3)
 	network.train(learningRate,trainingSet)
 
 	#build confusion matrix

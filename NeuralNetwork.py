@@ -50,7 +50,6 @@ class NeuralNetwork():
         for trainer in trainingData:            
             #create a vector for the actual output
             targetVector = np.reshape(trainer[1],(self.numOutputs,1))
-
             #create an Nx1 vector with the input data            
             # inputVector = np.append(trainer[0],[self.inputLayerBias])
             inputVector = np.array(trainer[0])
